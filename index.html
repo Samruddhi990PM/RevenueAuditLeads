@@ -63,19 +63,19 @@
     background-attachment: fixed;
   }
 
-  /* Frosted overlay — keeps image visible but cards readable */
+  /* Frosted overlay — darker + heavier frost for hero legibility */
   .bg-layer::after {
     content: '';
     position: absolute;
     inset: 0;
     background: linear-gradient(
       160deg,
-      rgba(10,8,4,0.38) 0%,
-      rgba(20,14,6,0.28) 40%,
-      rgba(8,6,3,0.42) 100%
+      rgba(6,4,2,0.62) 0%,
+      rgba(10,7,3,0.52) 40%,
+      rgba(5,3,1,0.66) 100%
     );
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
   }
 
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -129,7 +129,7 @@
   .hero-title {
     font-family: "Cormorant Garamond", serif;
     font-size: clamp(30px, 5.5vw, 52px);
-    font-weight: 600;
+    font-weight: 900;
     line-height: 1.15;
     color: #FFFFFF;
     margin-bottom: 16px;
@@ -148,8 +148,8 @@
 
   .hero-subtitle {
     font-size: 16px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.75);
+    font-weight: 500;
+    color: rgba(255,255,255,0.92);
     line-height: 1.72;
     max-width: 480px;
     margin: 0 auto;
@@ -480,6 +480,10 @@
   .toast.success { background: #E8F7EF; color: #1A7040; border: 1px solid rgba(26,158,82,0.3); }
   .toast.err     { background: #FDE8E8; color: #9B2020; border: 1px solid rgba(196,52,52,0.3); }
 
+  /* Hide score column */
+  .score-cell { display: none; }
+  .q-table thead th:nth-child(3) { display: none; }
+
   /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      RESPONSIVE
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -514,10 +518,10 @@
     </div>
 
     <h1 class="hero-title">
-      Is Your Holiday Home<br><em>Earning What It Should?</em>
+      Is Your Holiday Home Portfolio<br><em>Earning What It Should?</em>
     </h1>
     <p class="hero-subtitle">
-      Take the 2-minute revenue check and discover your property's true earning potential.
+      Take the 2 min revenue check and submit to claim your 1 month <strong style="color:var(--gold-glow);font-weight:700;">"FREE REVENUE SERVICE"</strong>
     </p>
   </div>
 
@@ -533,7 +537,6 @@
         <tr>
           <th>Question</th>
           <th>Response</th>
-          <th>Score</th>
         </tr>
       </thead>
       <tbody id="questionBody"></tbody>
@@ -582,8 +585,8 @@
 
   <!-- ══════════ SECTION 3 — Result ══════════ -->
   <div class="section-card" id="section3">
-    <div class="section-header">
-      <h2 class="section-title">Your Revenue Readiness Score</h2>
+    <div class="section-header" style="text-align:center;">
+      <h2 class="section-title" style="font-size:clamp(22px,4vw,34px);">Your Revenue Readiness Score</h2>
     </div>
 
     <div class="result-giant">
@@ -606,17 +609,12 @@
     <div class="cta-block">
       <div class="cta-block-title">Want to Uplift Your Booking Game?</div>
       <p class="cta-block-body">We help holiday home owners sharpen pricing, improve listing performance, and capture more revenue opportunities. Ready to see what&rsquo;s possible?</p>
-      <button class="cta-btn-shine" onclick="revealConnect()">Yes, Connect Me &rarr;</button>
+      <button class="cta-btn-shine" onclick="revealConnect()">Claim Your FREE Revenue Strategy! &rarr;</button>
     </div>
   </div>
 
   <!-- ══════════ SECTION 4 — Connect ══════════ -->
   <div class="section-card" id="section4">
-    <div class="section-header">
-      <h2 class="section-title">Claim Your Complimentary Summer Revenue Strategy Session!</h2>
-      <p class="section-subtitle">Choose how you&rsquo;d like to connect with us and take the next step toward better pricing, better visibility, and better bookings.</p>
-    </div>
-
     <div class="connect-grid">
       <!-- WhatsApp -->
       <a class="connect-card wa" href="https://wa.me/971528771983" target="_blank" rel="noopener">
@@ -629,7 +627,7 @@
           </span>
         </div>
         <div class="connect-title">Chat on WhatsApp</div>
-        <div class="connect-sub">Quick questions? Get instant answers from our team.</div>
+        <div class="connect-sub">Get your free service with instant message.</div>
       </a>
 
       <!-- Calendly -->
@@ -650,8 +648,8 @@
             </svg>
           </span>
         </div>
-        <div class="connect-title">Book a Strategy Call</div>
-        <div class="connect-sub">Schedule a focused session to review your property&rsquo;s potential.</div>
+        <div class="connect-title">Book a Kick Off Call</div>
+        <div class="connect-sub">Schedule your kick off call and get started today.</div>
       </a>
     </div>
   </div>
