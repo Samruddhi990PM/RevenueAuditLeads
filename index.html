@@ -661,17 +661,36 @@
 <script>
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    SUPABASE CONFIG
-   Replace SUPABASE_URL and SUPABASE_ANON with your values
+   Paste your values from: Dashboard → Project Settings → API
    Table: revenueaudit_leads
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const SUPABASE_URL  = 'https://bkmqdolnunntmlkafkaq.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrbXFkb2xudW5udG1sa2Fma2FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjY4NzIsImV4cCI6MjA5MDEwMjg3Mn0.1E0rBEAwAYlDLl6cBeCz3id6isQ7RMeCrXGbbUtdsQw';
+const SUPABASE_URL  = 'https://bkmqdolnunntmlkafkaq.supabase.co'; // ← replace
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrbXFkb2xudW5udG1sa2Fma2FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjY4NzIsImV4cCI6MjA5MDEwMjg3Mn0.1E0rBEAwAYlDLl6cBeCz3id6isQ7RMeCrXGbbUtdsQw';                // ← replace
 
-let sb;
-try {
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-} catch(e) {
-  console.warn('Supabase init failed:', e);
+/* ━━━━━━━━━━━━━━━━━━━━
+   Direct REST insert — no SDK, no CORS surprises
+   Uses the PostgREST endpoint Supabase exposes on every project
+━━━━━━━━━━━━━━━━━━━━ */
+async function supabaseInsert(table, payload) {
+  const url = `${SUPABASE_URL}/rest/v1/${table}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Prefer':        'return=minimal'   // don't need row back, avoids SELECT RLS
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    // PostgREST returns JSON error bodies
+    let errBody = '';
+    try { errBody = JSON.stringify(await res.json()); } catch(_) { errBody = await res.text(); }
+    throw new Error(`HTTP ${res.status}: ${errBody}`);
+  }
+  return true;
 }
 
 /* ━━━━━━━━━━━━━━━━━━ DATA ━━━━━━━━━━━━━━━━━━ */
@@ -744,7 +763,7 @@ function submitQuestionnaire() {
   showSection(2);
 }
 
-/* ━━━━━━━━━━━━━━━━━━ SUBMIT LEAD + SUPABASE ━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━ SUBMIT LEAD ━━━━━━━━━━━━━━━━━━ */
 async function submitLead() {
   const name  = document.getElementById('fname').value.trim();
   const phone = document.getElementById('phone').value.trim();
@@ -762,7 +781,20 @@ async function submitLead() {
   if (!ok) return;
 
   const btn = document.getElementById('leadBtn');
-  btn.disabled = true; btn.textContent = 'Saving…';
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  // Guard: don't attempt if still placeholder
+  const isConfigured = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1
+                    && SUPABASE_ANON.indexOf('YOUR_ANON') === -1;
+
+  if (!isConfigured) {
+    console.warn('Supabase credentials not set — running in demo mode.');
+    toast('Demo mode — Supabase credentials not yet configured', 'err');
+    btn.disabled = false; btn.textContent = 'Show My Result →';
+    showSection(3); renderResult();
+    return;
+  }
 
   const payload = {
     full_name:    name,
@@ -778,29 +810,14 @@ async function submitLead() {
     submitted_at: new Date().toISOString()
   };
 
-  let saved = false;
-
-  if (sb && SUPABASE_URL !== 'https://bkmqdolnunntmlkafkaq.supabase.co') {
-    try {
-      const { data, error } = await sb
-        .from('revenueaudit_leads')
-        .insert([payload]);
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        toast('⚠ Could not save: ' + error.message, 'err');
-      } else {
-        console.log('Saved:', data);
-        toast('✓ Details saved successfully', 'success');
-        saved = true;
-      }
-    } catch (e) {
-      console.error('Network error:', e);
-      toast('⚠ Network error — check console', 'err');
-    }
-  } else {
-    console.log('[Demo mode] Lead data:', payload);
-    toast('Demo mode — configure Supabase to save', 'err');
+  try {
+    await supabaseInsert('revenueaudit_leads', payload);
+    console.log('✓ Lead saved to Supabase:', payload);
+    toast('✓ Details saved successfully', 'success');
+  } catch (err) {
+    console.error('Supabase save failed:', err.message);
+    // Still show result — don't block the user
+    toast('⚠ Save error: ' + err.message.slice(0, 80), 'err');
   }
 
   btn.disabled = false; btn.textContent = 'Show My Result →';
