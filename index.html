@@ -521,7 +521,7 @@
       Is Your Holiday Home Portfolio<br><em>Earning What It Should?</em>
     </h1>
     <p class="hero-subtitle">
-      Take the 2 min revenue check and submit to claim your <strong style="color:var(--gold-glow);font-weight:700;">"FREE REVENUE SERVICE"</strong>
+      Take the 2 min revenue check and submit to claim your 1 month <strong style="color:var(--gold-glow);font-weight:700;">"FREE REVENUE SERVICE"</strong>
     </p>
   </div>
 
@@ -657,17 +657,19 @@
 </div>
 
 <script>
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SUPABASE CONFIG
-   Paste your values from: Dashboard → Project Settings → API
-   Table: revenueaudit_leads
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ▼ REPLACE THESE 3 VALUES WITH YOUR ACTUAL CREDENTIALS ▼
+   ─────────────────────────────────────────────────────────
+   SUPABASE_URL  → Supabase Dashboard → Project Settings → API → Project URL
+   SUPABASE_ANON → Supabase Dashboard → Project Settings → API → anon / public key
+   EDGE_FN_URL   → Supabase Dashboard → Edge Functions → notify-lead → copy URL shown at top
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const SUPABASE_URL  = 'https://bkmqdolnunntmlkafkaq.supabase.co'; // ← replace
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrbXFkb2xudW5udG1sa2Fma2FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjY4NzIsImV4cCI6MjA5MDEwMjg3Mn0.1E0rBEAwAYlDLl6cBeCz3id6isQ7RMeCrXGbbUtdsQw';                // ← replace
+const EDGE_FN_URL   = 'https://bkmqdolnunntmlkafkaq.supabase.co/functions/v1/RevenueAuditLead'; // ← REPLACE
 
 /* ━━━━━━━━━━━━━━━━━━━━
-   Direct REST insert — no SDK, no CORS surprises
-   Uses the PostgREST endpoint Supabase exposes on every project
+   Direct REST insert into Supabase table
 ━━━━━━━━━━━━━━━━━━━━ */
 async function supabaseInsert(table, payload) {
   const url = `${SUPABASE_URL}/rest/v1/${table}`;
@@ -677,13 +679,12 @@ async function supabaseInsert(table, payload) {
       'Content-Type':  'application/json',
       'apikey':        SUPABASE_ANON,
       'Authorization': `Bearer ${SUPABASE_ANON}`,
-      'Prefer':        'return=minimal'   // don't need row back, avoids SELECT RLS
+      'Prefer':        'return=minimal'
     },
     body: JSON.stringify(payload)
   });
 
   if (!res.ok) {
-    // PostgREST returns JSON error bodies
     let errBody = '';
     try { errBody = JSON.stringify(await res.json()); } catch(_) { errBody = await res.text(); }
     throw new Error(`HTTP ${res.status}: ${errBody}`);
@@ -782,13 +783,14 @@ async function submitLead() {
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
-  // Guard: don't attempt if still placeholder
+  // Guard: don't attempt if placeholders still present
   const isConfigured = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1
-                    && SUPABASE_ANON.indexOf('YOUR_ANON') === -1;
+                    && SUPABASE_ANON.indexOf('YOUR_ANON') === -1
+                    && EDGE_FN_URL.indexOf('YOUR_PROJECT_ID') === -1;
 
   if (!isConfigured) {
-    console.warn('Supabase credentials not set — running in demo mode.');
-    toast('Demo mode — Supabase credentials not yet configured', 'err');
+    console.warn('Credentials not configured — demo mode.');
+    toast('Demo mode — replace the 3 config values at top of script', 'err');
     btn.disabled = false; btn.textContent = 'Show My Result →';
     showSection(3); renderResult();
     return;
@@ -809,13 +811,35 @@ async function submitLead() {
   };
 
   try {
+    // ── 1. Save lead to Supabase table ───────────────────────────
     await supabaseInsert('revenueaudit_leads', payload);
-    console.log('✓ Lead saved to Supabase:', payload);
+    console.log('✓ Lead saved to Supabase');
+
+    // ── 2. Call Edge Function directly → triggers Resend email ───
+    const fnRes = await fetch(EDGE_FN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON}`
+      },
+      body: JSON.stringify({ record: payload })
+      // { record: payload } matches the shape the Edge Function expects
+    });
+
+    if (!fnRes.ok) {
+      const errText = await fnRes.text();
+      console.error('Edge Function error:', errText);
+      // Email failed but lead is saved — don't block user
+    } else {
+      const fnData = await fnRes.json();
+      console.log('✓ Alert email sent. Resend ID:', fnData.emailId);
+    }
+
     toast('✓ Details saved successfully', 'success');
+
   } catch (err) {
-    console.error('Supabase save failed:', err.message);
-    // Still show result — don't block the user
-    toast('⚠ Save error: ' + err.message.slice(0, 80), 'err');
+    console.error('Error:', err.message);
+    toast('⚠ Error: ' + err.message.slice(0, 80), 'err');
   }
 
   btn.disabled = false; btn.textContent = 'Show My Result →';
