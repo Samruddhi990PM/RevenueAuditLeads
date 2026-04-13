@@ -3,24 +3,6 @@
 
 ---
 
-## Table of Contents
-
-1. [Project Overview](#1-project-overview)
-2. [Tech Stack](#2-tech-stack)
-3. [Repository Structure](#3-repository-structure)
-4. [How the App Works](#4-how-the-app-works)
-5. [Local Development](#5-local-development)
-6. [Supabase Setup](#6-supabase-setup)
-7. [Resend + Edge Function Setup](#7-resend--edge-function-setup)
-8. [Environment Variables](#8-environment-variables)
-9. [Deploying to Vercel](#9-deploying-to-vercel)
-10. [Making Content Changes](#10-making-content-changes)
-11. [Troubleshooting](#11-troubleshooting)
-12. [Credentials Reference Sheet](#12-credentials-reference-sheet)
-13. [Project Checklist](#13-project-checklist)
-
----
-
 ## 1. Project Overview
 
 **What it is:** A lead-generation web app built for Strategy Cues, targeting holiday home owners. Visitors complete a 9-question Revenue Health Check, submit their contact details, view a personalised revenue readiness score, then choose to connect via WhatsApp or book a strategy call on Calendly.
