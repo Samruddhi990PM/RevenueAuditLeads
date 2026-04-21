@@ -335,67 +335,14 @@ After updating, **commit and push** — Vercel auto-deploys from the `main` bran
 
 ---
 
-## 9. Deployed to Vercel
+## 9. Deployements on GIT & Vercel
 
 
-Account: samruddhiwstrategycues -> Strategycues projects hobby -> revenue-audit-lead
+Vercel: Account - samruddhiwstrategycues -> Strategycues projects hobby -> revenue-audit-lead
 
+GIT: Samruddhi990PM -> RevenueAuditLeads
 
----
-
-## 11. Troubleshooting
-
-### Form Submission Issues
-
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| Toast: "Demo mode — replace the 3 config values" | Placeholder values still in `index.html` | Replace `SUPABASE_URL`, `SUPABASE_ANON`, `EDGE_FN_URL` with real values |
-| Toast: "Save error: HTTP 401" | Anon key is wrong or missing | Re-copy the `anon public` key from Supabase → Project Settings → API |
-| Toast: "Save error: HTTP 403" | RLS INSERT policy missing | Run `CREATE POLICY "anon_can_insert"` SQL from Section 6.4 |
-| Toast: "Save error: HTTP 404" | Wrong table name or URL | Confirm table is named exactly `revenueaudit_leads` and URL has no typo |
-| Nothing happens on submit | JavaScript error | Open browser DevTools → F12 → Console tab → look for red errors |
-
-### Email Alert Issues
-
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| No email received | Edge Function not called or erroring | Check Edge Function logs (see below) |
-| Logs show: `RESEND_API_KEY is undefined` | Secret not saved in this project | Supabase → Project Settings → Edge Functions → Secrets → re-add `RESEND_API_KEY` |
-| Logs show: `401 Unauthorized` | Wrong Resend API key | Get fresh key from Resend Dashboard → API Keys |
-| Logs show: `422 Unprocessable` | Wrong sender domain | Confirm `FROM_EMAIL` uses `mail.strategycues.com` not `strategycues.com` |
-| Logs show: `Missing record in payload` | `EDGE_FN_URL` is wrong in HTML | Re-copy function URL from Supabase → Edge Functions → `RevenueAuditLead` |
-| Edge Function deploys with parse error | Syntax error in `index.ts` | Do not add or modify template literals — use string concatenation for dynamic HTML |
-
-### Viewing Logs
-
-**Edge Function logs** (most useful for email issues):
-```
-Supabase Dashboard → Edge Functions → RevenueAuditLead → Logs tab
-```
-
-**Resend delivery logs** (for bounce/delivery issues):
-```
-Resend Dashboard → Logs
-```
-
-**Browser console** (for frontend submission issues):
-```
-Open app in browser → Press F12 → Console tab
-```
-
-**Vercel deployment logs** (for deploy failures):
-```
-Vercel Dashboard → your project → Deployments → click latest → View logs
-```
-
-### Vercel Deployment Issues
-
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| Deploy fails | Usually no cause — static HTML always deploys | Check Vercel logs — likely a repo connection issue |
-| Changes not showing | Browser cache | Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac) |
-| Custom domain not working | DNS not propagated yet | Wait 30 minutes after adding DNS records, then verify in Vercel |
-| Old version showing | Vercel not triggered | Check that you pushed to `main` branch, not a different branch |
+Site Link: https://revenue-audit-leads.vercel.app/
 
 ---
 
